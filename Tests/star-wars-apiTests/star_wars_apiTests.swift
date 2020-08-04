@@ -7,7 +7,7 @@ final class star_wars_apiTests: XCTestCase {
     
     func testPeople() {
         let exp = expectation(description: "Completion block called")
-        StarWarsAPI().peoplePublisher()
+        StarWarsAPI.peoplePublisher()
             .sink(receiveCompletion: { completion in
                 switch completion {
                 case .failure(let error): XCTFail(error.localizedDescription)
