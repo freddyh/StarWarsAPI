@@ -22,9 +22,7 @@ public struct StarWarsAPI {
         let reason: String
     }
     
-//    var cancellables: Set<AnyCancellable> = []
-    
-    public func peoplePublisher() -> AnyPublisher<[Person], APIError> {
+    public static func peoplePublisher() -> AnyPublisher<[Person], APIError> {
         let url = URL(string: "https://swapi.dev/api/people")!
         return URLSession.shared.dataTaskPublisher(for: url)
             .map({ $0.data })
