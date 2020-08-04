@@ -22,9 +22,7 @@ struct StarWarsAPI {
         let reason: String
     }
     
-    var text = "Hello, World!"
-    
-    var cancellables: Set<AnyCancellable> = []
+//    var cancellables: Set<AnyCancellable> = []
     
     func peoplePublisher() -> AnyPublisher<[Person], APIError> {
         let url = URL(string: "https://swapi.dev/api/people")!
