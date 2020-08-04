@@ -1,13 +1,13 @@
 import Combine
 import Foundation
 
-struct StarWarsAPI {
+public struct StarWarsAPI {
     
     struct PeopleWrapper: Codable {
         let results: [Person]
     }
     
-    struct Person: Codable {
+    public struct Person: Codable {
         let name: String
         let height: String
         let mass: String
@@ -18,13 +18,13 @@ struct StarWarsAPI {
         let edited: String
     }
     
-    struct APIError: Error {
+    public struct APIError: Error {
         let reason: String
     }
     
 //    var cancellables: Set<AnyCancellable> = []
     
-    func peoplePublisher() -> AnyPublisher<[Person], APIError> {
+    public func peoplePublisher() -> AnyPublisher<[Person], APIError> {
         let url = URL(string: "https://swapi.dev/api/people")!
         return URLSession.shared.dataTaskPublisher(for: url)
             .map({ $0.data })
