@@ -7,15 +7,16 @@ public struct StarWarsAPI {
         let results: [Person]
     }
     
-    public struct Person: Codable {
-        let name: String
-        let height: String
-        let mass: String
-        let homeWorld: String?
-        let films: [String]
-        let url: String
-        let created: String
-        let edited: String
+    public struct Person: Codable, Identifiable {
+        public var id: String { name }
+        public let name: String
+        public let height: String
+        public let mass: String
+        public let homeWorld: String?
+        public let films: [String]
+        public let url: String
+        public let created: String
+        public let edited: String
     }
     
     public struct APIError: Error {
