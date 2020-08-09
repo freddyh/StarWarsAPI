@@ -1,3 +1,3 @@
 # star-wars-api
 
-A description of this package.
+A helper package for fetching data from [SWAPI](https://swapi.dev/documentation)
