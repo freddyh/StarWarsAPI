@@ -47,10 +47,29 @@ final class star_wars_apiTests: XCTestCase {
             }.store(in: &cancellabes)
         waitForExpectations(timeout: 8, handler: nil)
     }
+    
+    func testRootPublisher() {
+        let exp = expectation(description: "Completion block called")
+        StarWarsAPI.rootPublisher().sink { (completion) in
+            switch completion {
+            case .failure(let error): XCTFail(error.localizedDescription)
+            case .finished: exp.fulfill()
+            }
+        } receiveValue: { (root) in
+            XCTAssert(root.films == "http://swapi.dev/api/films/")
+            XCTAssert(root.planets == "http://swapi.dev/api/planets/")
+            XCTAssert(root.species == "http://swapi.dev/api/species/")
+            XCTAssert(root.starships == "http://swapi.dev/api/starships/")
+            XCTAssert(root.vehicles == "http://swapi.dev/api/vehicles/")
+            XCTAssert(root.people == "http://swapi.dev/api/people/")
+        }.store(in: &cancellabes)
+        waitForExpectations(timeout: 8, handler: nil)
+    }
 
     static var allTests = [
         ("testPeopleListPublisher", testPeopleListPublisher),
         ("testPersonPublisher", testPersonPublisher),
-        ("testPersonPublishers", testPersonPublishers)
+        ("testPersonPublishers", testPersonPublishers),
+        ("testRootPublisher", testRootPublisher)
     ]
 }
