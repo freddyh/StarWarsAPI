@@ -97,7 +97,7 @@ public struct StarWarsAPI {
         }
     }
     
-    public static func decodePublisher<T: Decodable>(url: URL) -> AnyPublisher<T, APIError> {
+    static func decodePublisher<T: Decodable>(url: URL) -> AnyPublisher<T, APIError> {
         return URLSession.shared.dataTaskPublisher(for: url)
             .map({ $0.data })
             .decode(type: T.self, decoder: JSONDecoder())
@@ -107,7 +107,7 @@ public struct StarWarsAPI {
             .eraseToAnyPublisher()
     }
     
-    public static func publisher<T: Decodable>(url: URL, transform: @escaping (Data) -> T) -> AnyPublisher<T, APIError> {
+    static func publisher<T: Decodable>(url: URL, transform: @escaping (Data) -> T) -> AnyPublisher<T, APIError> {
         return URLSession.shared.dataTaskPublisher(for: url)
             .map({ $0.data })
             .map(transform)
