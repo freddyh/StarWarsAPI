@@ -60,6 +60,17 @@ public struct StarWarsAPI {
         public let species: String
         public let starships: String
         public let vehicles: String
+        
+        public var collections: [String] {
+            [
+                films,
+                people,
+                planets,
+                species,
+                starships,
+                vehicles
+            ]
+        }
     }
     
     public struct APIError: Error {
