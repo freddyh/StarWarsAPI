@@ -176,7 +176,7 @@ public struct StarWarsAPI {
         public let edited: String // string -- the ISO 8601 date format of the time that this resource was edited.
     }
     
-    public struct Person: Codable, Identifiable {
+    public struct Person: Decodable, Identifiable {
         public var id: String { name }
         public let name: String
         public let height: String
@@ -188,7 +188,7 @@ public struct StarWarsAPI {
         public let edited: String
     }
     
-    public struct Root: Codable {
+    public struct Root: Decodable {
         public let films: String
         public let people: String
         public let planets: String
@@ -234,7 +234,7 @@ public struct StarWarsAPI {
     public static func peopleListPublisher() -> AnyPublisher<[Person], APIError> {
         let url = Endpoint.peopleList().url
         return publisher(url: url) { (data) in
-            struct PeopleWrapper: Codable {
+            struct PeopleWrapper: Decodable {
                 let results: [Person]
             }
             
@@ -243,6 +243,30 @@ public struct StarWarsAPI {
         }
     }
     
+    // MARK: Films
+
+    public static func filmPublishers(ids: [Int]) -> AnyPublisher<Film, APIError> {
+        let publishers = ids.map(filmPublisher(id:))
+        return Publishers.MergeMany(publishers).prefix(ids.count).eraseToAnyPublisher()
+    }
+    
+    public static func filmPublisher(id: Int) -> AnyPublisher<Film, APIError> {
+        let url = Endpoint.film(id: id).url
+        return decodePublisher(url: url)
+    }
+    
+    public static func filmListPublisher() -> AnyPublisher<[Film], APIError> {
+        let url = Endpoint.filmList().url
+        return publisher(url: url) { (data) in
+            struct FilmWrapper: Decodable {
+                let results: [Film]
+            }
+            
+            let wrapper = try? JSONDecoder().decode(FilmWrapper.self, from: data)
+            return wrapper?.results ?? []
+        }
+    }
+
     static func decodePublisher<T: Decodable>(url: URL) -> AnyPublisher<T, APIError> {
         return URLSession.shared.dataTaskPublisher(for: url)
             .map({ $0.data })
