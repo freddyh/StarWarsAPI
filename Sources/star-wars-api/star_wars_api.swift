@@ -52,11 +52,11 @@ extension Endpoint {
     }
     
     static func starshipList() -> Self {
-        Endpoint(path: "/starship", queryItems: [])
+        Endpoint(path: "/starships", queryItems: [])
     }
     
     static func starship(id: Int) -> Self {
-        Endpoint(path: "/starship/\(id)", queryItems: [])
+        Endpoint(path: "/starships/\(id)", queryItems: [])
     }
     
     static func filmList() -> Self {
@@ -85,8 +85,8 @@ public struct StarWarsAPI {
     /// A Film resource is a single film
     public struct Film: Decodable, Identifiable {
         
-        /// See episode id
-        public var id: Int { episode_id }
+        /// The id of this film. See `title`
+        public var id: String { title }
         
         /// The title of this film
         public let title: String
@@ -132,7 +132,10 @@ public struct StarWarsAPI {
     }
     
     /// A Starship is a single transport craft that has hyperdrive capability
-    public struct Starship {
+    public struct Starship: Decodable, Identifiable {
+        
+        /// The id of this starship. See `name`
+        public var id: String { name }
         
         /// The name of this starship. The common name, such as "Death Star".
         public let name: String
@@ -336,6 +339,7 @@ public struct StarWarsAPI {
         public let edited: String
     }
     
+    /// A People resource is an individual person or character within the Star Wars universe.
     public struct Person: Decodable, Identifiable {
         
         public var id: String { name }
@@ -386,6 +390,7 @@ public struct StarWarsAPI {
         public let edited: String
     }
     
+    /// The Root resource provides information on all available resources within the API.
     public struct Root: Decodable {
         
         /// The URL root for Film resources
@@ -476,6 +481,49 @@ public struct StarWarsAPI {
             let wrapper = try? JSONDecoder().decode(FilmWrapper.self, from: data)
             return wrapper?.results ?? []
         }
+    }
+
+    // MARK: Starships
+    
+    public static func starshipPublishers(ids: [Int]) -> AnyPublisher<Starship, APIError> {
+        let publishers = ids.map(starshipPublisher(id:))
+        return Publishers.MergeMany(publishers).prefix(ids.count).eraseToAnyPublisher()
+    }
+    
+    public static func starshipPublisher(id: Int) -> AnyPublisher<Starship, APIError> {
+        let endpoint = Endpoint.starship(id: id)
+        return decodeEndpointPublisher(endpoint: endpoint)
+    }
+    
+    public static func starshipListPublisher() -> AnyPublisher<[Starship], APIError> {
+        let endpoint = Endpoint.starshipList()
+        return endpointPublisher(endpoint: endpoint) { (data) in
+            struct StarshipWrapper: Decodable {
+                let results: [Starship]
+            }
+            let wrapper = try? JSONDecoder().decode(StarshipWrapper.self, from: data)
+            return wrapper?.results ?? []
+        }
+    }
+    
+    static func decodeEndpointPublisher<T: Decodable>(endpoint: Endpoint) -> AnyPublisher<T, APIError> {
+        return URLSession.shared.dataTaskPublisher(for: endpoint.url)
+            .map({ $0.data })
+            .decode(type: T.self, decoder: JSONDecoder())
+            .mapError({ (failure) -> APIError in
+                return APIError(reason: failure.localizedDescription)
+            })
+            .eraseToAnyPublisher()
+    }
+    
+    static func endpointPublisher<T: Decodable>(endpoint: Endpoint, transform: @escaping (Data) -> T) -> AnyPublisher<T, APIError> {
+        return URLSession.shared.dataTaskPublisher(for: endpoint.url)
+            .map({ $0.data })
+            .map(transform)
+            .mapError({ (failure) -> APIError in
+                return APIError(reason: failure.localizedDescription)
+            })
+            .eraseToAnyPublisher()
     }
 
     static func decodePublisher<T: Decodable>(url: URL) -> AnyPublisher<T, APIError> {

@@ -5,6 +5,54 @@ import Combine
 final class star_wars_apiTests: XCTestCase {
     var cancellabes: Set<AnyCancellable> = []
     
+    // MARK: Starship Tests
+    
+    func testStarshipPublishers() {
+        let names = ["CR90 corvette", "The Empire Strikes Back", "Return of the Jedi"]
+        let exp = expectation(description: "Completion block called")
+        StarWarsAPI.starshipPublishers(ids: [2])
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .failure(let error): XCTFail(error.localizedDescription)
+                case .finished: exp.fulfill()
+                }
+            }) { (starship) in
+                print(starship.name)
+                XCTAssert(names.contains(starship.name), "starship name missing")
+            }.store(in: &cancellabes)
+        waitForExpectations(timeout: 3.0, handler: nil)
+    }
+    
+    func testStarshipListPublisher() {
+        let exp = expectation(description: "Completion block called")
+        StarWarsAPI.starshipListPublisher()
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .failure(let error): XCTFail(error.localizedDescription)
+                case .finished: exp.fulfill()
+                }
+            }) { (starships) in
+                XCTAssert(starships.count > 0)
+            }.store(in: &cancellabes)
+        waitForExpectations(timeout: 3, handler: nil)
+    }
+    
+    func testStarshipPublisher() {
+        let exp = expectation(description: "Completion block called")
+        StarWarsAPI.starshipPublisher(id: 2)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .failure(let error): XCTFail(error.localizedDescription)
+                case .finished: exp.fulfill()
+                }
+            }) { (starship) in
+                XCTAssert(starship.name == "CR90 corvette")
+            }.store(in: &cancellabes)
+        waitForExpectations(timeout: 3, handler: nil)
+    }
+
+    // MARK: Film Tests
+    
     func testFilmPublishers() {
         let titles = ["A New Hope", "The Empire Strikes Back", "Return of the Jedi"]
         let exp = expectation(description: "Completion block called")
@@ -17,7 +65,7 @@ final class star_wars_apiTests: XCTestCase {
             }) { (film) in
                 XCTAssert(titles.contains(film.title))
             }.store(in: &cancellabes)
-        waitForExpectations(timeout: 8, handler: nil)
+        waitForExpectations(timeout: 3, handler: nil)
     }
     
     func testFilmListPublisher() {
@@ -31,7 +79,7 @@ final class star_wars_apiTests: XCTestCase {
             }) { (films) in
                 XCTAssert(films.count > 0)
             }.store(in: &cancellabes)
-        waitForExpectations(timeout: 8, handler: nil)
+        waitForExpectations(timeout: 3, handler: nil)
     }
     
     func testFilmPublisher() {
@@ -45,9 +93,10 @@ final class star_wars_apiTests: XCTestCase {
             }) { (film) in
                 XCTAssert(film.title == "A New Hope")
             }.store(in: &cancellabes)
-        waitForExpectations(timeout: 8, handler: nil)
+        waitForExpectations(timeout: 3, handler: nil)
     }
     
+    // MARK: People Tests
     func testPeopleListPublisher() {
         let exp = expectation(description: "Completion block called")
         StarWarsAPI.peopleListPublisher()
@@ -59,7 +108,7 @@ final class star_wars_apiTests: XCTestCase {
             }) { (people) in
                 XCTAssert(people.count > 0)
             }.store(in: &cancellabes)
-        waitForExpectations(timeout: 8, handler: nil)
+        waitForExpectations(timeout: 3, handler: nil)
     }
 
     func testPersonPublisher() {
@@ -73,7 +122,7 @@ final class star_wars_apiTests: XCTestCase {
             }) { (person) in
                 XCTAssert(person.name == "Luke Skywalker")
             }.store(in: &cancellabes)
-        waitForExpectations(timeout: 8, handler: nil)
+        waitForExpectations(timeout: 3, handler: nil)
     }
     
     func testPersonPublishers() {
@@ -88,7 +137,7 @@ final class star_wars_apiTests: XCTestCase {
             }) { (person) in
                 XCTAssert(names.contains(person.name))
             }.store(in: &cancellabes)
-        waitForExpectations(timeout: 8, handler: nil)
+        waitForExpectations(timeout: 3, handler: nil)
     }
     
     func testRootPublisher() {
@@ -106,10 +155,13 @@ final class star_wars_apiTests: XCTestCase {
             XCTAssert(root.vehicles == "http://swapi.dev/api/vehicles/")
             XCTAssert(root.people == "http://swapi.dev/api/people/")
         }.store(in: &cancellabes)
-        waitForExpectations(timeout: 8, handler: nil)
+        waitForExpectations(timeout: 3, handler: nil)
     }
 
     static var allTests = [
+        ("testStarshipPublishers", testStarshipPublishers),
+        ("testStarshipListPublisher", testStarshipListPublisher),
+        ("testStarshipPublisher", testStarshipPublisher),
         ("testFilmPublishers", testFilmPublishers),
         ("testFilmListPublisher", testFilmListPublisher),
         ("testFilmPublisher", testFilmPublisher),
