@@ -415,18 +415,6 @@ public struct StarWarsAPI {
         
         /// The URL root for Vehicles resources
         public let vehicles: String
-        
-        /// An array of the URL roots for all resources
-        public var collections: [String] {
-            [
-                films,
-                people,
-                planets,
-                species,
-                starships,
-                vehicles
-            ]
-        }
     }
     
     public struct APIError: Error {
