@@ -8,7 +8,9 @@ struct Endpoint {
 
 extension Endpoint {
     static var scheme: String { "https" }
+    
     static var host: String { "swapi.dev" }
+    
     private static var rootPath: String { "/api" }
     
     var url: URL {
@@ -434,6 +436,11 @@ public struct StarWarsAPI {
     // MARK: Root
     
     public static func rootPublisher() -> AnyPublisher<Root, APIError> {
+        let url = Endpoint.root().url
+        return decodePublisher(url: url)
+    }
+    
+    public static func rootMapPublisher() -> AnyPublisher<[String: String], APIError> {
         let url = Endpoint.root().url
         return decodePublisher(url: url)
     }
