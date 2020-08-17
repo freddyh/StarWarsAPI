@@ -5,19 +5,63 @@ import Combine
 final class star_wars_apiTests: XCTestCase {
     var cancellabes: Set<AnyCancellable> = []
     
-    // MARK: Starship Tests
+    // MARK: Vehicle Tests
     
-    func testStarshipPublishers() {
-        let names = ["CR90 corvette", "The Empire Strikes Back", "Return of the Jedi"]
+    func testVehiclePublishers() {
+        let names = ["Sand Crawler", "X-34 landspeeder", "T-16 skyhopper"]
         let exp = expectation(description: "Completion block called")
-        StarWarsAPI.starshipPublishers(ids: [2])
+        StarWarsAPI.vehiclePublishers(ids: [4, 6, 7])
             .sink(receiveCompletion: { completion in
                 switch completion {
                 case .failure(let error): XCTFail(error.localizedDescription)
                 case .finished: exp.fulfill()
                 }
             }) { (starship) in
-                print(starship.name)
+                XCTAssert(names.contains(starship.name), "starship name missing")
+            }.store(in: &cancellabes)
+        waitForExpectations(timeout: 3.0, handler: nil)
+    }
+    
+    func testVehicleListPublisher() {
+        let exp = expectation(description: "Completion block called")
+        StarWarsAPI.vehicleListPublisher()
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .failure(let error): XCTFail(error.localizedDescription)
+                case .finished: exp.fulfill()
+                }
+            }) { (starships) in
+                XCTAssert(starships.count > 0)
+            }.store(in: &cancellabes)
+        waitForExpectations(timeout: 3, handler: nil)
+    }
+    
+    func testVehiclePublisher() {
+        let exp = expectation(description: "Completion block called")
+        StarWarsAPI.vehiclePublisher(id: 4)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .failure(let error): XCTFail(error.localizedDescription)
+                case .finished: exp.fulfill()
+                }
+            }) { (starship) in
+                XCTAssert(starship.name == "Sand Crawler")
+            }.store(in: &cancellabes)
+        waitForExpectations(timeout: 3, handler: nil)
+    }
+
+    // MARK: Starship Tests
+    
+    func testStarshipPublishers() {
+        let names = ["CR90 corvette", "Star Destroyer", "Sentinel-class landing craft"]
+        let exp = expectation(description: "Completion block called")
+        StarWarsAPI.starshipPublishers(ids: [2, 3, 5])
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .failure(let error): XCTFail(error.localizedDescription)
+                case .finished: exp.fulfill()
+                }
+            }) { (starship) in
                 XCTAssert(names.contains(starship.name), "starship name missing")
             }.store(in: &cancellabes)
         waitForExpectations(timeout: 3.0, handler: nil)
@@ -159,6 +203,9 @@ final class star_wars_apiTests: XCTestCase {
     }
 
     static var allTests = [
+        ("testVehiclePublishers", testVehiclePublishers),
+        ("testVehicleListPublisher", testVehicleListPublisher),
+        ("testVehiclePublisher", testVehiclePublisher),
         ("testStarshipPublishers", testStarshipPublishers),
         ("testStarshipListPublisher", testStarshipListPublisher),
         ("testStarshipPublisher", testStarshipPublisher),

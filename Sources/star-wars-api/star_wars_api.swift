@@ -44,11 +44,11 @@ extension Endpoint {
     }
     
     static func vehicleList() -> Self {
-        Endpoint(path: "/vehicle", queryItems: [])
+        Endpoint(path: "/vehicles", queryItems: [])
     }
     
     static func vehicle(id: Int) -> Self {
-        Endpoint(path: "/vehicle/\(id)", queryItems: [])
+        Endpoint(path: "/vehicles/\(id)", queryItems: [])
     }
     
     static func starshipList() -> Self {
@@ -193,7 +193,10 @@ public struct StarWarsAPI {
     }
     
     /// A Vehicle resource is a single transport craft that does not have hyperdrive capability.
-    public struct Vehicle {
+    public struct Vehicle: Decodable, Identifiable {
+        
+        /// The id of this vehicle. See `name`.
+        public var id: String { name }
         
         /// The name of this vehicle. The common name, such as "Sand Crawler" or "Speeder bike".
         public let name: String
@@ -505,7 +508,30 @@ public struct StarWarsAPI {
             return wrapper?.results ?? []
         }
     }
+
+    // MARK: Vehicles
     
+    public static func vehiclePublishers(ids: [Int]) -> AnyPublisher<Vehicle, APIError> {
+        let publishers = ids.map(vehiclePublisher(id:))
+        return Publishers.MergeMany(publishers).prefix(ids.count).eraseToAnyPublisher()
+    }
+    
+    public static func vehiclePublisher(id: Int) -> AnyPublisher<Vehicle, APIError> {
+        let endpoint = Endpoint.vehicle(id: id)
+        return decodeEndpointPublisher(endpoint: endpoint)
+    }
+    
+    public static func vehicleListPublisher() -> AnyPublisher<[Vehicle], APIError> {
+        let endpoint = Endpoint.vehicleList()
+        return endpointPublisher(endpoint: endpoint) { (data) in
+            struct Wrapper: Decodable {
+                let results: [Vehicle]
+            }
+            let wrapper = try? JSONDecoder().decode(Wrapper.self, from: data)
+            return wrapper?.results ?? []
+        }
+    }
+
     static func decodeEndpointPublisher<T: Decodable>(endpoint: Endpoint) -> AnyPublisher<T, APIError> {
         return URLSession.shared.dataTaskPublisher(for: endpoint.url)
             .map({ $0.data })
