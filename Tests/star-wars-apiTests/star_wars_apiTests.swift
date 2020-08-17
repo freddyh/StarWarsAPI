@@ -5,6 +5,51 @@ import Combine
 final class star_wars_apiTests: XCTestCase {
     var cancellabes: Set<AnyCancellable> = []
     
+    // MARK: Species Tests
+    
+    func testSpeciesPublishers() {
+        let names = ["Rodian", "Trandoshan", "Yoda's species"]
+        let exp = expectation(description: "Completion block called")
+        StarWarsAPI.speciesPublishers(ids: [4, 6, 7])
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .failure(let error): XCTFail(error.localizedDescription)
+                case .finished: exp.fulfill()
+                }
+            }) { (starship) in
+                XCTAssertTrue(names.contains(starship.name), "species name missing")
+            }.store(in: &cancellabes)
+        waitForExpectations(timeout: 3.0, handler: nil)
+    }
+    
+    func testSpeciesListPublisher() {
+        let exp = expectation(description: "Completion block called")
+        StarWarsAPI.speciesListPublisher()
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .failure(let error): XCTFail(error.localizedDescription)
+                case .finished: exp.fulfill()
+                }
+            }) { (starships) in
+                XCTAssert(starships.count > 0)
+            }.store(in: &cancellabes)
+        waitForExpectations(timeout: 3, handler: nil)
+    }
+    
+    func testSpeciesPublisher() {
+        let exp = expectation(description: "Completion block called")
+        StarWarsAPI.speciesPublisher(id: 4)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .failure(let error): XCTFail(error.localizedDescription)
+                case .finished: exp.fulfill()
+                }
+            }) { (species) in
+                XCTAssertEqual(species.name, "Rodian", "unexpected name for species")
+            }.store(in: &cancellabes)
+        waitForExpectations(timeout: 3, handler: nil)
+    }
+
     // MARK: Vehicle Tests
     
     func testVehiclePublishers() {
@@ -229,6 +274,9 @@ final class star_wars_apiTests: XCTestCase {
     
 
     static var allTests = [
+        ("testSpeciesPublishers", testSpeciesPublishers),
+        ("testSpeciesListPublisher", testSpeciesListPublisher),
+        ("testSpeciesPublisher", testSpeciesPublisher),
         ("testVehiclePublishers", testVehiclePublishers),
         ("testVehicleListPublisher", testVehicleListPublisher),
         ("testVehiclePublisher", testVehiclePublisher),

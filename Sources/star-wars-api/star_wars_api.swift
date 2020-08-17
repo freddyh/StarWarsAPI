@@ -189,7 +189,10 @@ public struct Vehicle: Decodable, Identifiable {
 }
 
 /// A Species resource is a type of person or character within the Star Wars Universe.
-public struct Species {
+public struct Species: Decodable, Identifiable {
+    
+    /// The id of this species. See `name`.
+    public var id: String { name }
     
     /// The name of this species.
     public let name: String
@@ -219,7 +222,7 @@ public struct Species {
     public let language: String
     
     /// The URL of a planet resource, a planet that this species originates from.
-    public let homeworld: String
+    public let homeworld: String?
     
     /// An array of People URL Resources that are a part of this species.
     public let people: [String]
@@ -527,6 +530,33 @@ public struct StarWarsAPI {
         }
     }
 
+    // MARK: Species
+    
+    public static func speciesPublishers(ids: [Int]) -> AnyPublisher<Species, APIError> {
+        let publishers = ids.map(speciesPublisher(id:))
+        return Publishers.MergeMany(publishers).prefix(ids.count).eraseToAnyPublisher()
+    }
+    
+    public static func speciesPublisher(id: Int) -> AnyPublisher<Species, APIError> {
+        let endpoint = Endpoint.species(id: id)
+        return decodeEndpointPublisher(endpoint: endpoint)
+    }
+    
+    public static func speciesListPublisher() -> AnyPublisher<[Species], APIError> {
+        let endpoint = Endpoint.speciesList()
+        return endpointPublisher(endpoint: endpoint) { (data) in
+            struct Wrapper: Decodable {
+                let results: [Species]
+            }
+            do {
+                return try JSONDecoder().decode(Wrapper.self, from: data).results
+            }
+            catch {
+                print(error)
+                return []
+            }
+        }
+    }
     static func decodeEndpointPublisher<T: Decodable>(endpoint: Endpoint) -> AnyPublisher<T, APIError> {
         return URLSession.shared.dataTaskPublisher(for: endpoint.url)
             .map({ $0.data })
