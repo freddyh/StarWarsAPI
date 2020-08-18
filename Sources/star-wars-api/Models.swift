@@ -247,7 +247,10 @@ public struct Species: Decodable, Identifiable {
 }
 
 /// A Planet resource is a large mass, planet or planetoid in the Star Wars Universe, at the time of 0 ABY.
-public struct Planet {
+public struct Planet: Decodable, Identifiable {
+    
+    /// The id of this planet. See `name`.
+    public var id: String { name }
     
     /// The name of this planet.
     public let name: String

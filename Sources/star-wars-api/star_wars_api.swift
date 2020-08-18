@@ -221,6 +221,37 @@ public struct StarWarsAPI {
             }
         }
     }
+    
+    // MARK: Planets
+    
+    public static func planetPublishers(ids: [Int]) -> AnyPublisher<Planet, APIError> {
+        let publishers = ids.map(planetPublisher(id:))
+        return Publishers.MergeMany(publishers).prefix(ids.count).eraseToAnyPublisher()
+    }
+    
+    public static func planetPublisher(id: Int) -> AnyPublisher<Planet, APIError> {
+        let endpoint = Endpoint.planets(id: id)
+        return decodeEndpointPublisher(endpoint: endpoint)
+    }
+    
+    public static func planetListPublisher() -> AnyPublisher<[Planet], APIError> {
+        let endpoint = Endpoint.planetsList()
+        return endpointPublisher(endpoint: endpoint) { (data) in
+            struct Wrapper: Decodable {
+                let results: [Planet]
+            }
+            do {
+                return try JSONDecoder().decode(Wrapper.self, from: data).results
+            }
+            catch {
+                print(error)
+                return []
+            }
+        }
+    }
+    
+    // MARK: Helpers
+    
     static func decodeEndpointPublisher<T: Decodable>(endpoint: Endpoint) -> AnyPublisher<T, APIError> {
         return URLSession.shared.dataTaskPublisher(for: endpoint.url)
             .map({ $0.data })

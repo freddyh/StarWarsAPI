@@ -5,6 +5,51 @@ import Combine
 final class star_wars_apiTests: XCTestCase {
     var cancellabes: Set<AnyCancellable> = []
     
+    // MARK: Planets Tests
+    
+    func testPlanetsPublishers() {
+        let names = ["Hoth", "Bespin", "Endor"]
+        let exp = expectation(description: "Completion block called")
+        StarWarsAPI.planetPublishers(ids: [4, 6, 7])
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .failure(let error): XCTFail(error.localizedDescription)
+                case .finished: exp.fulfill()
+                }
+            }) { (p) in
+                XCTAssertTrue(names.contains(p.name), "planet name missing")
+            }.store(in: &cancellabes)
+        waitForExpectations(timeout: 3.0, handler: nil)
+    }
+    
+    func testPlanetsListPublisher() {
+        let exp = expectation(description: "Completion block called")
+        StarWarsAPI.planetListPublisher()
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .failure(let error): XCTFail(error.localizedDescription)
+                case .finished: exp.fulfill()
+                }
+            }) { (p) in
+                XCTAssert(p.count > 0)
+            }.store(in: &cancellabes)
+        waitForExpectations(timeout: 3, handler: nil)
+    }
+    
+    func testPlanetsPublisher() {
+        let exp = expectation(description: "Completion block called")
+        StarWarsAPI.planetPublisher(id: 4)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .failure(let error): XCTFail(error.localizedDescription)
+                case .finished: exp.fulfill()
+                }
+            }) { (p) in
+                XCTAssertEqual(p.name, "Hoth", "unexpected name for planet")
+            }.store(in: &cancellabes)
+        waitForExpectations(timeout: 3, handler: nil)
+    }
+
     // MARK: Species Tests
     
     func testSpeciesPublishers() {
