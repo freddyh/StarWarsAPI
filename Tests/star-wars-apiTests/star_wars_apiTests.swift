@@ -272,7 +272,6 @@ final class star_wars_apiTests: XCTestCase {
         waitForExpectations(timeout: 3, handler: nil)
     }
     
-
     static var allTests = [
         ("testSpeciesPublishers", testSpeciesPublishers),
         ("testSpeciesListPublisher", testSpeciesListPublisher),
