@@ -113,15 +113,8 @@ public struct StarWarsAPI {
     }
     
     public static func peopleListPublisher() -> AnyPublisher<[Person], APIError> {
-        let url = Endpoint.peopleList().url
-        return publisher(url: url) { (data) in
-            struct PeopleWrapper: Decodable {
-                let results: [Person]
-            }
-            
-            let wrapper = try? JSONDecoder().decode(PeopleWrapper.self, from: data)
-            return wrapper?.results ?? []
-        }
+        let endpoint = Endpoint.peopleList()
+        return listPublisher(endpoint: endpoint)
     }
     
     // MARK: Films
@@ -137,15 +130,8 @@ public struct StarWarsAPI {
     }
     
     public static func filmListPublisher() -> AnyPublisher<[Film], APIError> {
-        let url = Endpoint.filmList().url
-        return publisher(url: url) { (data) in
-            struct FilmWrapper: Decodable {
-                let results: [Film]
-            }
-            
-            let wrapper = try? JSONDecoder().decode(FilmWrapper.self, from: data)
-            return wrapper?.results ?? []
-        }
+        let endpoint = Endpoint.filmList()
+        return listPublisher(endpoint: endpoint)
     }
 
     // MARK: Starships
@@ -162,13 +148,7 @@ public struct StarWarsAPI {
     
     public static func starshipListPublisher() -> AnyPublisher<[Starship], APIError> {
         let endpoint = Endpoint.starshipList()
-        return endpointPublisher(endpoint: endpoint) { (data) in
-            struct StarshipWrapper: Decodable {
-                let results: [Starship]
-            }
-            let wrapper = try? JSONDecoder().decode(StarshipWrapper.self, from: data)
-            return wrapper?.results ?? []
-        }
+        return listPublisher(endpoint: endpoint)
     }
 
     // MARK: Vehicles
@@ -185,13 +165,7 @@ public struct StarWarsAPI {
     
     public static func vehicleListPublisher() -> AnyPublisher<[Vehicle], APIError> {
         let endpoint = Endpoint.vehicleList()
-        return endpointPublisher(endpoint: endpoint) { (data) in
-            struct Wrapper: Decodable {
-                let results: [Vehicle]
-            }
-            let wrapper = try? JSONDecoder().decode(Wrapper.self, from: data)
-            return wrapper?.results ?? []
-        }
+        return listPublisher(endpoint: endpoint)
     }
 
     // MARK: Species
@@ -208,18 +182,7 @@ public struct StarWarsAPI {
     
     public static func speciesListPublisher() -> AnyPublisher<[Species], APIError> {
         let endpoint = Endpoint.speciesList()
-        return endpointPublisher(endpoint: endpoint) { (data) in
-            struct Wrapper: Decodable {
-                let results: [Species]
-            }
-            do {
-                return try JSONDecoder().decode(Wrapper.self, from: data).results
-            }
-            catch {
-                print(error)
-                return []
-            }
-        }
+        return listPublisher(endpoint: endpoint)
     }
     
     // MARK: Planets
@@ -236,18 +199,7 @@ public struct StarWarsAPI {
     
     public static func planetListPublisher() -> AnyPublisher<[Planet], APIError> {
         let endpoint = Endpoint.planetsList()
-        return endpointPublisher(endpoint: endpoint) { (data) in
-            struct Wrapper: Decodable {
-                let results: [Planet]
-            }
-            do {
-                return try JSONDecoder().decode(Wrapper.self, from: data).results
-            }
-            catch {
-                print(error)
-                return []
-            }
-        }
+        return listPublisher(endpoint: endpoint)
     }
     
     // MARK: Helpers
@@ -290,5 +242,21 @@ public struct StarWarsAPI {
                 return APIError(reason: failure.localizedDescription)
             })
             .eraseToAnyPublisher()
+    }
+    
+    struct ListWrapper<T: Decodable>: Decodable {
+        let results: [T]
+    }
+    
+    static func listPublisher<T: Decodable>(endpoint: Endpoint) -> AnyPublisher<[T], APIError> {
+        return endpointPublisher(endpoint: endpoint) { (data) -> [T] in
+            do {
+                return try JSONDecoder().decode(ListWrapper.self, from: data).results
+            }
+            catch {
+                print(error.localizedDescription)
+                return []
+            }
+        }
     }
 }
