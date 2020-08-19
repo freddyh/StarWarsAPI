@@ -91,13 +91,13 @@ public struct StarWarsAPI {
     // MARK: Root
     
     public static func rootPublisher() -> AnyPublisher<Root, APIError> {
-        let url = Endpoint.root().url
-        return decodePublisher(url: url)
+        let endpoint = Endpoint.root()
+        return decodeEndpointPublisher(endpoint: endpoint)
     }
     
     public static func rootMapPublisher() -> AnyPublisher<[String: String], APIError> {
-        let url = Endpoint.root().url
-        return decodePublisher(url: url)
+        let endpoint = Endpoint.root()
+        return decodeEndpointPublisher(endpoint: endpoint)
     }
     
     // MARK: People
@@ -108,8 +108,8 @@ public struct StarWarsAPI {
     }
     
     public static func personPublisher(id: Int) -> AnyPublisher<Person, APIError> {
-        let url = Endpoint.people(id: id).url
-        return decodePublisher(url: url)
+        let endpoint = Endpoint.people(id: id)
+        return decodeEndpointPublisher(endpoint: endpoint)
     }
     
     public static func peopleListPublisher() -> AnyPublisher<[Person], APIError> {
@@ -125,8 +125,8 @@ public struct StarWarsAPI {
     }
     
     public static func filmPublisher(id: Int) -> AnyPublisher<Film, APIError> {
-        let url = Endpoint.film(id: id).url
-        return decodePublisher(url: url)
+        let endpoint = Endpoint.film(id: id)
+        return decodeEndpointPublisher(endpoint: endpoint)
     }
     
     public static func filmListPublisher() -> AnyPublisher<[Film], APIError> {
@@ -216,26 +216,6 @@ public struct StarWarsAPI {
     
     static func endpointPublisher<T: Decodable>(endpoint: Endpoint, transform: @escaping (Data) -> T) -> AnyPublisher<T, APIError> {
         return URLSession.shared.dataTaskPublisher(for: endpoint.url)
-            .map({ $0.data })
-            .map(transform)
-            .mapError({ (failure) -> APIError in
-                return APIError(reason: failure.localizedDescription)
-            })
-            .eraseToAnyPublisher()
-    }
-
-    static func decodePublisher<T: Decodable>(url: URL) -> AnyPublisher<T, APIError> {
-        return URLSession.shared.dataTaskPublisher(for: url)
-            .map({ $0.data })
-            .decode(type: T.self, decoder: JSONDecoder())
-            .mapError({ (failure) -> APIError in
-                return APIError(reason: failure.localizedDescription)
-            })
-            .eraseToAnyPublisher()
-    }
-    
-    static func publisher<T: Decodable>(url: URL, transform: @escaping (Data) -> T) -> AnyPublisher<T, APIError> {
-        return URLSession.shared.dataTaskPublisher(for: url)
             .map({ $0.data })
             .map(transform)
             .mapError({ (failure) -> APIError in
