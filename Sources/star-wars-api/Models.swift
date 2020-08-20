@@ -30,7 +30,7 @@ public struct Root: Decodable {
 }
 
 /// A Film resource is a single film
-public struct Film: Decodable, Identifiable {
+public struct Film: Decodable, Identifiable, Hashable, Equatable {
     
     /// The id of this film. See `title`
     public var id: String { title }
@@ -79,7 +79,7 @@ public struct Film: Decodable, Identifiable {
 }
 
 /// A Starship is a single transport craft that has hyperdrive capability
-public struct Starship: Decodable, Identifiable {
+public struct Starship: Decodable, Identifiable, Hashable, Equatable {
     
     /// The id of this starship. See `name`
     public var id: String { name }
@@ -140,7 +140,7 @@ public struct Starship: Decodable, Identifiable {
 }
 
 /// A Vehicle resource is a single transport craft that does not have hyperdrive capability.
-public struct Vehicle: Decodable, Identifiable {
+public struct Vehicle: Decodable, Identifiable, Hashable, Equatable {
     
     /// The id of this vehicle. See `name`.
     public var id: String { name }
@@ -195,7 +195,7 @@ public struct Vehicle: Decodable, Identifiable {
 }
 
 /// A Species resource is a type of person or character within the Star Wars Universe.
-public struct Species: Decodable, Identifiable {
+public struct Species: Decodable, Identifiable, Hashable, Equatable {
     
     /// The id of this species. See `name`.
     public var id: String { name }
@@ -247,7 +247,7 @@ public struct Species: Decodable, Identifiable {
 }
 
 /// A Planet resource is a large mass, planet or planetoid in the Star Wars Universe, at the time of 0 ABY.
-public struct Planet: Decodable, Identifiable {
+public struct Planet: Decodable, Identifiable, Hashable, Equatable {
     
     /// The id of this planet. See `name`.
     public var id: String { name }
@@ -296,7 +296,7 @@ public struct Planet: Decodable, Identifiable {
 }
 
 /// A People resource is an individual person or character within the Star Wars universe.
-public struct Person: Decodable, Identifiable {
+public struct Person: Decodable, Identifiable, Hashable, Equatable {
     
     /// The id of this person. See `name`
     public var id: String { name }
